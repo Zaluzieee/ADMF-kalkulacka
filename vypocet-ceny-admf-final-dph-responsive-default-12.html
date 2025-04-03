@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Výpočet ceny ADMF</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    input, select { width: 100%; box-sizing: border-box; padding: 5px; }
+    button { margin-top: 15px; padding: 10px 15px; }
+    .summary { margin-top: 20px; font-weight: bold; }
+    .summary input { width: auto; }
+  
+
+@media (max-width: 600px) {
+  body { padding: 10px; }
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+  thead {
+    display: none;
+  }
+  tr {
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    padding: 10px;
+  }
+  td {
+    text-align: left;
+    position: relative;
+    padding-left: 50%;
+    box-sizing: border-box;
+  }
+  td::before {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    width: 45%;
+    padding-right: 10px;
+    white-space: nowrap;
+    font-weight: bold;
+  }
+  td:nth-child(1)::before { content: "Cena s 12% DPH"; }
+  td:nth-child(2)::before { content: "Sleva (%)"; }
+  td:nth-child(3)::before { content: "Cena po slevě"; }
+  td:nth-child(4)::before { content: "Cena s novou DPH"; }
+  input, select, button {
+    font-size: 16px;
+  }
+}
+
+</style>
+</head>
+<body>
+  <h2>Výpočet ceny ADMF</h2>
+
+  <label>Nová DPH:
+    <select id="dphNew">
+      <option value="0">0 %</option>
+      <option value="12" selected>12 %</option>
+      <option value="21">21 %</option>
+    </select>
+  </label>
+
+  <table id="productTable">
+    <thead>
+      <tr>
+        <th>Cena s 12% DPH</th>
+        <th>Sleva (%)</th>
+        <th>Cena po slevě</th>
+        <th>Cena s <span id="dphLabel">12%</span> DPH</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody">
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2"><strong>Celková cena s novou DPH:</strong></td>
+        <td colspan="2"><input type="number" id="celkovaCena" readonly></td>
+      </tr>
+      
+<tr>
+  <td colspan="2"><strong>Výše zálohy:</strong></td>
+  <td colspan="2">
+    <select id="zalohaSelect" onchange="recalculateDoplatek()">
+      <option value="50">50 %</option>
+      <option value="70">70 %</option>
+      <option value="individual">Individuální</option>
+    </select>
+  </td>
+</tr>
+<tr id="individualRow" style="display: none;">
+  <td colspan="2"><strong>Individuální záloha (%):</strong></td>
+  <td colspan="2"><input type="number" id="zalohaIndividual" oninput="recalculateDoplatek()"></td>
+</tr>
+<tr>
+  <td colspan="2"><strong>Záloha (zaokrouhlená na 100):</strong></td>
+  <td colspan="2"><input type="number" id="zaloha" readonly></td>
+</tr>
+<tr>
+  <td colspan="2"><strong>Doplatek:</strong></td>
+  <td colspan="2"><input type="number" id="doplatek" readonly></td>
+</tr>
+
+    </tfoot>
+  </table>
+
+  <button onclick="addRow()">Přidat řádek</button>
+  <button onclick="recalculateAll()">Přepočítat</button>
+
+  <script>
+    function round(value) {
+      return Math.round(value);
+    }
+
+    function addRow() {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><input type="number" class="cenaDPH" oninput="recalculateAll()"></td>
+        <td><input type="number" class="sleva" oninput="recalculateAll()"></td>
+        <td><input type="number" class="cenaSleva" readonly></td>
+        <td><input type="number" class="novaCena" readonly></td>
+      `;
+      document.getElementById('tableBody').appendChild(row);
+    }
+
+    function recalculateAll() {
+      const dphNewSelect = document.getElementById('dphNew');
+      const dphNew = parseFloat(dphNewSelect.options[dphNewSelect.selectedIndex].value) || 0;
+      document.getElementById('dphLabel').innerText = dphNew + '%';
+
+      let totalCenaSleva = 0;
+
+      document.querySelectorAll('#tableBody tr').forEach(row => {
+        const cenaDPH = parseFloat(row.querySelector('.cenaDPH').value) || 0;
+        const sleva = parseFloat(row.querySelector('.sleva').value) || 0;
+
+        const cenaPoSleve = cenaDPH * (1 - sleva / 100);
+        const zaklad = cenaPoSleve / 1.12;
+        const novaCena = zaklad * (1 + dphNew / 100);
+
+        const cenaPoSleveRounded = round(cenaPoSleve);
+        const novaCenaRounded = round(novaCena);
+
+        row.querySelector('.cenaSleva').value = cenaPoSleveRounded;
+        row.querySelector('.novaCena').value = novaCenaRounded;
+
+        totalCenaSleva += novaCenaRounded;
+      });
+
+      document.getElementById('celkovaCena').value = round(totalCenaSleva);
+      recalculateDoplatek();
+    }
+
+    
+function recalculateDoplatek() {
+  const celkova = parseFloat(document.getElementById('celkovaCena').value) || 0;
+  const zalohaSelect = document.getElementById('zalohaSelect');
+  const zalohaValue = zalohaSelect.value;
+
+  let zalohaPercent = 0;
+  if (zalohaValue === "individual") {
+    document.getElementById("individualRow").style.display = "";
+    zalohaPercent = parseFloat(document.getElementById('zalohaIndividual').value) || 0;
+  } else {
+    document.getElementById("individualRow").style.display = "none";
+    zalohaPercent = parseFloat(zalohaValue) || 0;
+  }
+
+  let zaloha = (celkova * zalohaPercent / 100);
+  zaloha = Math.ceil(zaloha / 100) * 100;
+
+  const doplatek = celkova - zaloha;
+
+  document.getElementById('zaloha').value = zaloha;
+  document.getElementById('doplatek').value = round(doplatek);
+}
+
+
+    // Inicializace s jedním prázdným řádkem
+    addRow();
+  </script>
+</body>
+</html>
