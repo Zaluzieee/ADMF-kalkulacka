@@ -1,57 +1,93 @@
-
 <!DOCTYPE html>
 <html lang="cs">
 <head>
   <meta charset="UTF-8">
   <title>Výpočet ceny ADMF</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    input, select { width: 100%; box-sizing: border-box; padding: 5px; }
-    button { margin-top: 15px; padding: 10px 15px; }
-    .summary { margin-top: 20px; font-weight: bold; }
-    .summary input { width: auto; }
-  
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      margin: auto;
+    }
+    table {
+      width: 100%;
+      max-width: 600px;
+      margin-top: 20px;
+      font-size: 16px;
+      border-collapse: collapse;
+      text-align: center;
+    }
+    th, td {
+      border: 2px solid #888;
+      padding: 10px;
+    }
+    input, select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      background-color: #f5faff;
+      border: 2px solid #555;
+      border-radius: 6px;
+    }
+    #dphNew {
+      width: 25%;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      background-color: #005bbb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #004499;
+    }
+    .summary {
+      margin-top: 20px;
+      font-weight: bold;
+    }
 
-@media (max-width: 600px) {
-  body { padding: 10px; }
-  table, thead, tbody, th, td, tr {
-    display: block;
-  }
-  thead {
-    display: none;
-  }
-  tr {
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    padding: 10px;
-  }
-  td {
-    text-align: left;
-    position: relative;
-    padding-left: 50%;
-    box-sizing: border-box;
-  }
-  td::before {
-    position: absolute;
-    top: 8px;
-    left: 10px;
-    width: 45%;
-    padding-right: 10px;
-    white-space: nowrap;
-    font-weight: bold;
-  }
-  td:nth-child(1)::before { content: "Cena s 12% DPH"; }
-  td:nth-child(2)::before { content: "Sleva (%)"; }
-  td:nth-child(3)::before { content: "Cena po slevě"; }
-  td:nth-child(4)::before { content: "Cena s novou DPH"; }
-  input, select, button {
-    font-size: 16px;
-  }
-}
-
-</style>
+    @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      thead {
+        display: none;
+      }
+      tr {
+        margin-bottom: 15px;
+        border: 2px solid #ccc;
+        padding: 10px;
+        background: #f9f9f9;
+        border-radius: 10px;
+      }
+      td {
+        text-align: left;
+        position: relative;
+        padding-left: 50%;
+        box-sizing: border-box;
+      }
+      td::before {
+        position: absolute;
+        top: 8px;
+        left: 10px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: bold;
+      }
+      td:nth-child(1)::before { content: "Cena s 12% DPH"; }
+      td:nth-child(2)::before { content: "Sleva (%)"; }
+      td:nth-child(3)::before { content: "Cena po slevě"; }
+      td:nth-child(4)::before { content: "Cena s novou DPH"; }
+    }
+  </style>
 </head>
 <body>
   <h2>Výpočet ceny ADMF</h2>
@@ -64,7 +100,7 @@
     </select>
   </label>
 
-  <table id="productTable">
+  <table id="productTable" style="margin-left: 0;">
     <thead>
       <tr>
         <th>Cena s 12% DPH</th>
@@ -80,30 +116,28 @@
         <td colspan="2"><strong>Celková cena s novou DPH:</strong></td>
         <td colspan="2"><input type="number" id="celkovaCena" readonly></td>
       </tr>
-      
-<tr>
-  <td colspan="2"><strong>Výše zálohy:</strong></td>
-  <td colspan="2">
-    <select id="zalohaSelect" onchange="recalculateDoplatek()">
-      <option value="50">50 %</option>
-      <option value="70">70 %</option>
-      <option value="individual">Individuální</option>
-    </select>
-  </td>
-</tr>
-<tr id="individualRow" style="display: none;">
-  <td colspan="2"><strong>Individuální záloha (%):</strong></td>
-  <td colspan="2"><input type="number" id="zalohaIndividual" oninput="recalculateDoplatek()"></td>
-</tr>
-<tr>
-  <td colspan="2"><strong>Záloha (zaokrouhlená na 100):</strong></td>
-  <td colspan="2"><input type="number" id="zaloha" readonly></td>
-</tr>
-<tr>
-  <td colspan="2"><strong>Doplatek:</strong></td>
-  <td colspan="2"><input type="number" id="doplatek" readonly></td>
-</tr>
-
+      <tr>
+        <td colspan="2"><strong>Výše zálohy:</strong></td>
+        <td colspan="2">
+          <select id="zalohaSelect" onchange="recalculateDoplatek()">
+            <option value="50">50 %</option>
+            <option value="70">70 %</option>
+            <option value="individual">Individuální</option>
+          </select>
+        </td>
+      </tr>
+      <tr id="individualRow" style="display: none;">
+        <td colspan="2"><strong>Individuální záloha (%):</strong></td>
+        <td colspan="2"><input type="number" id="zalohaIndividual" oninput="recalculateDoplatek()"></td>
+      </tr>
+      <tr>
+        <td colspan="2"><strong>Záloha (zaokrouhlená na 100):</strong></td>
+        <td colspan="2"><input type="number" id="zaloha" readonly></td>
+      </tr>
+      <tr>
+        <td colspan="2"><strong>Doplatek:</strong></td>
+        <td colspan="2"><input type="number" id="doplatek" readonly></td>
+      </tr>
     </tfoot>
   </table>
 
@@ -154,32 +188,29 @@
       recalculateDoplatek();
     }
 
-    
-function recalculateDoplatek() {
-  const celkova = parseFloat(document.getElementById('celkovaCena').value) || 0;
-  const zalohaSelect = document.getElementById('zalohaSelect');
-  const zalohaValue = zalohaSelect.value;
+    function recalculateDoplatek() {
+      const celkova = parseFloat(document.getElementById('celkovaCena').value) || 0;
+      const zalohaSelect = document.getElementById('zalohaSelect');
+      const zalohaValue = zalohaSelect.value;
 
-  let zalohaPercent = 0;
-  if (zalohaValue === "individual") {
-    document.getElementById("individualRow").style.display = "";
-    zalohaPercent = parseFloat(document.getElementById('zalohaIndividual').value) || 0;
-  } else {
-    document.getElementById("individualRow").style.display = "none";
-    zalohaPercent = parseFloat(zalohaValue) || 0;
-  }
+      let zalohaPercent = 0;
+      if (zalohaValue === "individual") {
+        document.getElementById("individualRow").style.display = "";
+        zalohaPercent = parseFloat(document.getElementById('zalohaIndividual').value) || 0;
+      } else {
+        document.getElementById("individualRow").style.display = "none";
+        zalohaPercent = parseFloat(zalohaValue) || 0;
+      }
 
-  let zaloha = (celkova * zalohaPercent / 100);
-  zaloha = Math.ceil(zaloha / 100) * 100;
+      let zaloha = (celkova * zalohaPercent / 100);
+      zaloha = Math.ceil(zaloha / 100) * 100;
 
-  const doplatek = celkova - zaloha;
+      const doplatek = celkova - zaloha;
 
-  document.getElementById('zaloha').value = zaloha;
-  document.getElementById('doplatek').value = round(doplatek);
-}
+      document.getElementById('zaloha').value = zaloha;
+      document.getElementById('doplatek').value = round(doplatek);
+    }
 
-
-    // Inicializace s jedním prázdným řádkem
     addRow();
   </script>
 </body>
